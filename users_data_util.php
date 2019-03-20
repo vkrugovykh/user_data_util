@@ -52,6 +52,34 @@ function getUsers($delimiter) {
     return $users;
 }
 
+
+//function countAverageLineCount | echo ID; user; average number of lines | for each user
 function countAverageLineCount($delimiter) {
-    var_dump(getUsers($delimiter));
+
+    $users = getUsers($delimiter);
+
+    foreach($users as $user) {
+//var_dump($user);
+
+        //try get users txt files
+        $usersTextsFiles = glob('./texts/' . $user['id'] . '-*.txt');
+
+        if ($usersTextsFiles) {
+
+            $countLines = 0; //total lines
+
+            foreach ($usersTextsFiles as $fileName) {
+                $countLines += count(file($fileName)); //sum lines
+            }
+
+            $countFileLines = $countLines / count($usersTextsFiles); //average number of lines
+
+            echo "ID: {$user['id']}; user: {$user['name']}; average number of lines: {$countFileLines}" . PHP_EOL;
+
+        } else {
+
+            // if 0 lines
+            echo "ID: {$user['id']}; user: {$user['name']}; average number of lines: 0" . PHP_EOL;
+        }
+    }
 }
