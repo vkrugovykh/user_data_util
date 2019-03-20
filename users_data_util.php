@@ -22,6 +22,7 @@ foreach ($argv as $item) {
             countAverageLineCount($delimiter);
             break;
         case 'replaceDates':
+            var_dump(convertDate('20/03/19'));
             //replaceDates($delimiter);
             break;
     }
@@ -83,3 +84,10 @@ function countAverageLineCount($delimiter) {
         }
     }
 }
+
+
+
+//function convertDate | get dd/mm/yy format date | return mm/dd/yyyy format date
+function convertDate($date) {
+    return DateTime::createFromFormat('d/m/y', $date)->format('m-d-Y');
+};
