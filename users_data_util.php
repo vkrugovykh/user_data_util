@@ -22,7 +22,7 @@ foreach ($argv as $item) {
             countAverageLineCount($delimiter);
             break;
         case 'replaceDates':
-            var_dump(checkCurrentDate('40/03/19'));
+            var_dump(replaceDatesInLine('lorem 20/03/19 lorem'));
             //replaceDates($delimiter);
             break;
     }
@@ -103,4 +103,28 @@ function checkCurrentDate($date) {
     } else {
         return false;
     }
+};
+
+
+//function replaceDatesInLine | get text like 'lorem dd/mm/yy lorem'
+// and return text like 'lorem mm/dd/yyyy lorem'
+// and return count replace dates
+function replaceDatesInLine($line) {
+
+    $dateFormat = '~(\d{2})\/(\d{2})\/(\d{2})~'; //pattern for date
+
+    $countReplaceDates = 0;
+
+    $result['line'] = preg_replace_callback($dateFormat,
+        function ($matches) {
+            if (checkCurrentDate($matches[0])) {
+                return convertDate($matches[0]);
+            }
+            return $matches[0];
+        },
+        $line, -1,$countReplaceDates);
+
+    $result['count'] = $countReplaceDates;
+
+    return $result;
 };
