@@ -22,8 +22,7 @@ foreach ($argv as $item) {
             countAverageLineCount($delimiter);
             break;
         case 'replaceDates':
-            var_dump(replaceDatesInLine('lorem 20/03/19 lorem'));
-            //replaceDates($delimiter);
+            replaceDates($delimiter);
             break;
     }
 }
@@ -128,3 +127,45 @@ function replaceDatesInLine($line) {
 
     return $result;
 };
+
+
+//function replaceDates | get $delimiter
+// echo user; replacements
+// creat file with modified dates
+function replaceDates($delimiter) {
+
+    $users = getUsers($delimiter); // get users
+
+    foreach($users as $user) {
+
+        $usersTextsFiles = glob('./texts/' . $user['id'] . '-*.txt');
+
+        if ($usersTextsFiles) {
+
+            $replacements = 0; //count replacements for this user
+
+            foreach ($usersTextsFiles as $fileName) {
+
+//                var_dump($name .PHP_EOL);
+                foreach (file($fileName) as $index => $line) {
+
+                    $replaceDatesInLine = replaceDatesInLine($line);
+
+                    $replacements = $replacements + $replaceDatesInLine['count'];
+
+                    if ($index === 0) {
+                        $fpn = fopen('./output_texts/' . basename($fileName), 'w'); //rewrite or creat file
+                        fwrite($fpn, $replaceDatesInLine['line']); //first line
+                    } else {
+                        fwrite($fpn, $replaceDatesInLine['line']); //after first line
+                    }
+                }
+
+                fclose($fpn);
+            }
+            echo "user: {$user['name']}; replacements - {$replacements}" . PHP_EOL;
+        } else {
+            echo "user: {$user['name']}; replacements - 0" . PHP_EOL;
+        }
+    }
+}
