@@ -19,10 +19,10 @@ foreach ($argv as $item) {
             $delimiter = ';';
             break;
         case 'countAverageLineCount':
-            countAverageLineCount($delimiter);
+            loop($delimiter, 'countAverageLineCount');
             break;
         case 'replaceDates':
-            replaceDates($delimiter);
+            loop($delimiter, 'replaceDates');
             break;
     }
 }
@@ -55,33 +55,20 @@ function getUsers($delimiter) {
 
 
 //function countAverageLineCount | echo ID; user; average number of lines | for each user
-function countAverageLineCount($delimiter) {
+function countAverageLineCount($usersTextsFiles, $user) {
 
-    $users = getUsers($delimiter);
+    if ($usersTextsFiles) {
+        $countLines = 0; //total lines
 
-    foreach($users as $user) {
-//var_dump($user);
-
-        //try get users txt files
-        $usersTextsFiles = glob('./texts/' . $user['id'] . '-*.txt');
-
-        if ($usersTextsFiles) {
-
-            $countLines = 0; //total lines
-
-            foreach ($usersTextsFiles as $fileName) {
-                $countLines += count(file($fileName)); //sum lines
-            }
-
-            $countFileLines = $countLines / count($usersTextsFiles); //average number of lines
-
-            echo "ID: {$user['id']}; user: {$user['name']}; average number of lines: {$countFileLines}" . PHP_EOL;
-
-        } else {
-
-            // if 0 lines
-            echo "ID: {$user['id']}; user: {$user['name']}; average number of lines: 0" . PHP_EOL;
+        foreach ($usersTextsFiles as $fileName) {
+            $countLines += count(file($fileName)); //sum lines
         }
+
+        $countFileLines = $countLines / count($usersTextsFiles); //average number of lines
+        echo "ID: {$user['id']}; user: {$user['name']}; average number of lines: {$countFileLines}" . PHP_EOL;
+    } else {
+        // if 0 lines
+        echo "ID: {$user['id']}; user: {$user['name']}; average number of lines: 0" . PHP_EOL;
     }
 }
 
@@ -109,9 +96,7 @@ function checkCurrentDate($date) {
 // and return text like 'lorem mm/dd/yyyy lorem'
 // and return count replace dates
 function replaceDatesInLine($line) {
-
     $dateFormat = '~(\d{2})\/(\d{2})\/(\d{2})~'; //pattern for date
-
     $countReplaceDates = 0;
 
     $result['line'] = preg_replace_callback($dateFormat,
@@ -129,43 +114,44 @@ function replaceDatesInLine($line) {
 };
 
 
-//function replaceDates | get $delimiter
+//function replaceDates
 // echo user; replacements
 // creat file with modified dates
-function replaceDates($delimiter) {
+function replaceDates($usersTextsFiles, $user) {
 
+    if ($usersTextsFiles) {
+        $replacements = 0; //count replacements for this user
+
+        foreach ($usersTextsFiles as $fileName) {
+            $fpn = fopen('./output_texts/' . basename($fileName), 'w'); //rewrite or creat file
+            foreach (file($fileName) as $index => $line) {
+                $replaceDatesInLine = replaceDatesInLine($line);
+                $replacements = $replacements + $replaceDatesInLine['count'];
+                fwrite($fpn, $replaceDatesInLine['line']); //line for file
+            }
+            fclose($fpn);
+        }
+
+        echo "user: {$user['name']}; replacements - {$replacements}" . PHP_EOL;
+    } else {
+        echo "user: {$user['name']}; replacements - 0" . PHP_EOL;
+    }
+}
+
+
+//function loop
+function loop($delimiter, $function) {
     $users = getUsers($delimiter); // get users
 
     foreach($users as $user) {
-
         $usersTextsFiles = glob('./texts/' . $user['id'] . '-*.txt');
-
-        if ($usersTextsFiles) {
-
-            $replacements = 0; //count replacements for this user
-
-            foreach ($usersTextsFiles as $fileName) {
-
-//                var_dump($name .PHP_EOL);
-                foreach (file($fileName) as $index => $line) {
-
-                    $replaceDatesInLine = replaceDatesInLine($line);
-
-                    $replacements = $replacements + $replaceDatesInLine['count'];
-
-                    if ($index === 0) {
-                        $fpn = fopen('./output_texts/' . basename($fileName), 'w'); //rewrite or creat file
-                        fwrite($fpn, $replaceDatesInLine['line']); //first line
-                    } else {
-                        fwrite($fpn, $replaceDatesInLine['line']); //after first line
-                    }
-                }
-
-                fclose($fpn);
-            }
-            echo "user: {$user['name']}; replacements - {$replacements}" . PHP_EOL;
-        } else {
-            echo "user: {$user['name']}; replacements - 0" . PHP_EOL;
+        switch ($function) {
+            case 'countAverageLineCount':
+                countAverageLineCount($usersTextsFiles, $user);
+                break;
+            case 'replaceDates':
+                replaceDates($usersTextsFiles, $user);
+                break;
         }
     }
 }
