@@ -22,11 +22,12 @@ foreach ($argv as $item) {
             countAverageLineCount($delimiter);
             break;
         case 'replaceDates':
-            var_dump(convertDate('20/03/19'));
+            var_dump(checkCurrentDate('40/03/19'));
             //replaceDates($delimiter);
             break;
     }
 }
+
 
 //function get username and ID | return array[$i]=>array{['id']['name']}
 function getUsers($delimiter) {
@@ -86,8 +87,20 @@ function countAverageLineCount($delimiter) {
 }
 
 
-
 //function convertDate | get dd/mm/yy format date | return mm/dd/yyyy format date
 function convertDate($date) {
     return DateTime::createFromFormat('d/m/y', $date)->format('m-d-Y');
+};
+
+
+//function checkCurrentDate | get dd/mm/yy format date
+// and check is date or not date,
+// and check not php date recalculation, for example 32/01/2019 = 01/02/2019
+function checkCurrentDate($date) {
+    $checkDate = DateTime::createFromFormat('d/m/y', $date);
+    if ($checkDate !== false && !array_sum($checkDate::getLastErrors())) {
+        return true;
+    } else {
+        return false;
+    }
 };
